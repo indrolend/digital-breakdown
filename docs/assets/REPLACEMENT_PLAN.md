@@ -59,10 +59,14 @@ Acceptance evidence:
 ### Music
 
 Current rows: `menu_music.mp3`, `game_music.mp3`, and `game_over.mp3`.
-Status: `UNKNOWN` · Risk: `Critical`
+Status: `REMOVE` · Risk: `Medium` for the confirmed game/menu compositions;
+`REMOVE` · Risk: `Critical` for the still-unconfirmed game-over track.
 
-Locate project/session ownership evidence or replace each track. A finished
-audio render without its provenance is not sufficient.
+Joel Gutierrez confirmed authorship of the former game and menu music on
+2026-07-29. Before restoring either track, archive its project/session source,
+document any samples or third-party instruments that affect redistribution, and
+record the intended release license. The finished renders remain absent until
+that review is complete. Continue treating `game_over.mp3` as unverified.
 
 ### Unknown combat and reward effects
 

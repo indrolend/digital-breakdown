@@ -34,6 +34,11 @@ bool hasAudioCue(const GameState& state, AudioCue cue) {
     for(const auto& event:state.audio.events) if(event.serial>0 && event.cue==cue) return true;
     return false;
 }
+bool hasCapturePointCue(const GameState& state) {
+    for(int cue=static_cast<int>(AudioCue::Capture1);cue<=static_cast<int>(AudioCue::Capture5);++cue)
+        if(hasAudioCue(state,static_cast<AudioCue>(cue))) return true;
+    return false;
+}
 bool hasAudioCueAfter(const GameState& state, AudioCue cue, unsigned int serial) {
     for(const auto& event:state.audio.events) if(event.serial>serial && event.cue==cue) return true;
     return false;
@@ -800,6 +805,8 @@ int main() {
             "fired soul cubes fill the wall goals sequentially and open the room");
         ok &= expect(state.progression.permanent.tokens==firstRoomRequired,
             "each newly filled goal awards exactly one persistent token");
+        ok &= expect(hasCapturePointCue(state),
+            "filling a capture point queues one of the five release-safe capture-success cues");
         ok &= expect(hasAudioCue(state,AudioCue::PaymentSuccess),
             "final room deposit queues the authoritative payment-success cue");
     }

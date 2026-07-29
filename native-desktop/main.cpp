@@ -707,6 +707,20 @@ void cursorCallback(GLFWwindow* window, double x, double y) {
     host->lastMouseY = y;
 }
 
+void scrollCallback(GLFWwindow* window, double, double yOffset) {
+    HostState* host = stateFor(window);
+    if (!host || host->mouseCaptured || yOffset == 0.0 || menuItemCount(host->game.state()) <= 0) return;
+    GameState& state = host->game.networkMutableState();
+    const PhoneDisplayMenuLayout layout = makePhoneDisplayMenuLayout(state);
+    if (layout.maxScroll <= 0.0f) return;
+    const float step = std::max(48.0f, layout.rowHeight * 0.85f);
+    const float next = phoneDisplayScrollBy(layout, static_cast<float>(-yOffset) * step);
+    if (std::abs(next - state.localSettings.menuScroll) <= 0.01f) return;
+    state.localSettings.menuScroll = next;
+    state.cinematic.textInteraction = 0.18f;
+    touchpadHapticPulse(TouchpadHapticNavigate, state.localSettings.controllerVibration);
+}
+
 void framebufferCallback(GLFWwindow* window, int width, int height) {
     HostState* host = stateFor(window);
     if (host) host->renderer.resize(width, height);
@@ -1139,6 +1153,7 @@ int main(int argc, char** argv) {
     glfwSetWindowUserPointer(window, &host);
     glfwSetKeyCallback(window, keyCallback);
     glfwSetCursorPosCallback(window, cursorCallback);
+    glfwSetScrollCallback(window, scrollCallback);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
     glfwSetWindowFocusCallback(window, windowFocusCallback);
     glfwSetFramebufferSizeCallback(window, framebufferCallback);

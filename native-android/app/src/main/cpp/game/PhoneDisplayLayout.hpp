@@ -145,6 +145,10 @@ inline float phoneDisplayScrollForSelection(const PhoneDisplayMenuLayout& layout
     return std::max(0.0f, std::min(layout.maxScroll, next));
 }
 
+inline float phoneDisplayScrollBy(const PhoneDisplayMenuLayout& layout, float delta) {
+    return std::max(0.0f, std::min(layout.maxScroll, layout.scrollOffset + delta));
+}
+
 inline bool phoneDisplayHasMoreAbove(const PhoneDisplayMenuLayout& layout) {
     return layout.maxScroll > 0.0f && layout.scrollOffset > 0.5f;
 }

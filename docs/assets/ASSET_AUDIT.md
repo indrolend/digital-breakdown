@@ -102,8 +102,11 @@ source-distribution assets even when they are not copied into a native binary.
 - `end_call_tone.mp3` identifies itself as “iOS System Sounds.” The surrounding
   phone cue set has compatible naming and no independent licenses. Status:
   `REPLACE`.
-- Music and several effects have no provenance. They must not enter an official
-  release merely because they are already committed.
+- The project maintainer confirmed on 2026-07-29 that he created the former
+  game and menu music. Their creator is no longer unknown, but the removed
+  renders remain absent until source sessions, third-party samples, and the
+  intended release license are documented. Several other removed effects still
+  have no provenance and must not be restored merely because local copies exist.
 
 ### High-risk blockers
 

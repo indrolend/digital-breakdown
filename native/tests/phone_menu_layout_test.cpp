@@ -114,6 +114,10 @@ int main() {
     assert(phoneDisplayHasMoreBelow(controlsTop));
     assert(phoneDisplayScrollThumbFraction(controlsTop) < 1.0f);
     assert(phoneDisplayScrollProgress(controlsTop) == 0.0f);
+    assert(phoneDisplayScrollBy(controlsTop, -100.0f) == 0.0f);
+    const float wheelStep = controlsTop.rowHeight * 0.85f;
+    assert(phoneDisplayScrollBy(controlsTop, wheelStep) > 0.0f);
+    assert(phoneDisplayScrollBy(controlsTop, controlsTop.maxScroll * 2.0f) == controlsTop.maxScroll);
     assert(controlsTop.rows[0].kind == PhoneMenuRowKind::Section);
     assert(controlsTop.rows[7].kind == PhoneMenuRowKind::Section);
     assert(controlsTop.rows[12].kind == PhoneMenuRowKind::Section);
@@ -127,6 +131,8 @@ int main() {
     assert(phoneDisplayHasMoreAbove(controlsBottom));
     assert(!phoneDisplayHasMoreBelow(controlsBottom));
     assert(phoneDisplayScrollProgress(controlsBottom) > 0.99f);
+    assert(phoneDisplayScrollBy(controlsBottom, wheelStep) == controlsBottom.maxScroll);
+    assert(phoneDisplayScrollBy(controlsBottom, -controlsBottom.maxScroll * 2.0f) == 0.0f);
     assert(selectionRow(controlsBottom, 15).action == PhoneMenuAction::Back);
     expectVisibleRowsInsideSafe(controlsBottom);
 
