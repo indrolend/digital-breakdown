@@ -666,7 +666,7 @@ void DesktopRenderer::drawStaticModel(unsigned int list, const Vec3& p, const Ve
 }
 
 void DesktopRenderer::drawHumanModel(const TargetState& target,float time,bool shadow) const {
-    humanModel_.skin(target.humanAnimationTime,target.attackTimer,target.attackVariant,humanVertices_);if(humanVertices_.empty())return;
+    humanModel_.skin(target.humanAnimationTime,target.attackTimer,target.attackVariant,humanVertices_,humanSkinScratch_);if(humanVertices_.empty())return;
     const bool aliveHuman=!target.slurpable;const HumanVisualPose pose=makeHumanVisualPose(target.visualYaw,target.scale,time,target.visualReaction,aliveHuman);
     const float attackT=target.attackTimer>0?1-clampf(target.attackTimer/HUMAN_SWING_ATTACK_DURATION,0.0f,1.0f):0;
     const float windup=std::sin(clampf(attackT/HUMAN_SWING_COMMIT_PHASE,0.0f,1.0f)*PI*0.5f)*(attackT<HUMAN_SWING_COMMIT_PHASE?1.0f:0.0f),strike=std::sin(clampf((attackT-HUMAN_SWING_COMMIT_PHASE)/(HUMAN_SWING_END_PHASE-HUMAN_SWING_COMMIT_PHASE),0.0f,1.0f)*PI);

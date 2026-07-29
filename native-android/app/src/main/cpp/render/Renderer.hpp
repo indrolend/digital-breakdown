@@ -48,6 +48,7 @@ private:
     TvGifWall tvGifWall_;
     std::vector<float> humanVertices_;
     std::vector<float> humanNormals_;
+    HumanModelSkinScratch humanSkinScratch_;
 
     bool initProgram();
     bool initDatamoshProgram();

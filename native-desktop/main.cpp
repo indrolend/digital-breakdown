@@ -911,11 +911,13 @@ bool captureFramebuffer(const std::filesystem::path& path,int width,int height){
 int runModelTest(const std::filesystem::path& root) {
     HumanModelData human;StaticModelData phone,flower;
     if(!human.load((root/"models"/"human.dbhuman").string())||!phone.load((root/"models"/"phone.dbmesh").string())||!flower.load((root/"models"/"flower.dbmesh").string())){std::fprintf(stderr,"MODEL_TEST_FAILED load\n");return 1;}
-    std::vector<float> idle,walk,attack;human.skin(0.0f,0.0f,0,idle);human.skin(0.25f,0.0f,0,walk);human.skin(0.25f,0.24f,1,attack);
+    std::vector<float> idle,walk,attack,scratchIdle;human.skin(0.0f,0.0f,0,idle);human.skin(0.25f,0.0f,0,walk);human.skin(0.25f,0.24f,1,attack);
+    HumanModelSkinScratch scratch;human.skin(0.0f,0.0f,0,scratchIdle,scratch);const auto scratchWorldCapacity=scratch.worlds.capacity(),scratchMatrixCapacity=scratch.skinMatrices.capacity();human.skin(0.25f,0.0f,0,scratchIdle,scratch);
     auto finite=[](const std::vector<float>& v){return !v.empty()&&std::all_of(v.begin(),v.end(),[](float x){return std::isfinite(x)&&std::abs(x)<100.0f;});};
     auto differs=[](const std::vector<float>& a,const std::vector<float>& b){if(a.size()!=b.size())return true;for(std::size_t i=0;i<a.size();++i)if(std::abs(a[i]-b[i])>0.00001f)return true;return false;};
     float minY=100,maxY=-100;for(std::size_t i=1;i<idle.size();i+=3){minY=std::min(minY,idle[i]);maxY=std::max(maxY,idle[i]);}
-    const bool ok=human.vertices.size()==4164&&human.bones.size()==33&&human.frameCount==60&&phone.vertices.size()/3==253740&&phone.batches.size()==30&&flower.vertices.size()/3==11628&&finite(idle)&&finite(walk)&&finite(attack)&&differs(idle,walk)&&differs(walk,attack)&&minY>-0.03f&&maxY>1.0f&&maxY<1.25f;
+    const bool scratchStable=scratch.worlds.capacity()==scratchWorldCapacity&&scratch.skinMatrices.capacity()==scratchMatrixCapacity&&!differs(walk,scratchIdle);
+    const bool ok=human.vertices.size()==4164&&human.bones.size()==33&&human.frameCount==60&&phone.vertices.size()/3==144&&phone.batches.size()==4&&flower.vertices.size()/3==11628&&finite(idle)&&finite(walk)&&finite(attack)&&differs(idle,walk)&&differs(walk,attack)&&scratchStable&&minY>-0.03f&&maxY>1.0f&&maxY<1.25f;
     std::printf("MODEL_TEST_%s human=%zu bones=%zu frames=%u phone=%zu/%zu flower=%zu y=[%.4f,%.4f] walk=%d attack=%d\n",ok?"OK":"FAILED",human.vertices.size(),human.bones.size(),human.frameCount,phone.vertices.size()/3,phone.batches.size(),flower.vertices.size()/3,minY,maxY,differs(idle,walk)?1:0,differs(walk,attack)?1:0);return ok?0:1;
 }
 

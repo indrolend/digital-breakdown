@@ -25,6 +25,11 @@ struct HumanModelPose {
   float scale[3];
 };
 
+struct HumanModelSkinScratch {
+  std::vector<float> worlds;
+  std::vector<float> skinMatrices;
+};
+
 struct HumanModelData {
   std::vector<HumanModelVertex> vertices;
   std::vector<HumanModelBone> bones;
@@ -101,6 +106,12 @@ struct HumanModelData {
 
   void skin(float animationTime, float attackTimer, int attackVariant,
             std::vector<float> &output) const {
+    HumanModelSkinScratch scratch;
+    skin(animationTime, attackTimer, attackVariant, output, scratch);
+  }
+
+  void skin(float animationTime, float attackTimer, int attackVariant,
+            std::vector<float> &output, HumanModelSkinScratch &scratch) const {
     if (!valid()) {
       output.clear();
       return;
@@ -112,7 +123,10 @@ struct HumanModelData {
     const unsigned int f0 = static_cast<unsigned int>(frame) % frameCount,
                        f1 = (f0 + 1) % frameCount;
     const float blend = frame - static_cast<float>(f0);
-    std::vector<float> worlds(boneCount * 16u), skinMatrices(boneCount * 16u);
+    scratch.worlds.resize(boneCount * 16u);
+    scratch.skinMatrices.resize(boneCount * 16u);
+    float *worlds = scratch.worlds.data();
+    float *skinMatrices = scratch.skinMatrices.data();
     for (std::size_t i = 0; i < boneCount; ++i) {
       const HumanModelPose &a =
           poses[static_cast<std::size_t>(f0) * boneCount + i];
@@ -128,15 +142,15 @@ struct HumanModelData {
         applyAttack(bones[i], attackTimer, attackVariant, q);
       float local[16];
       compose(p, q, s, local);
-      float *world = worlds.data() + i * 16u;
+      float *world = worlds + i * 16u;
       if (bones[i].parent >= 0)
         multiply(world,
-                 worlds.data() +
+                 worlds +
                      static_cast<std::size_t>(bones[i].parent) * 16u,
                  local);
       else
         multiply(world, rootParentMatrix, local);
-      multiply(skinMatrices.data() + i * 16u, world, bones[i].inverse);
+      multiply(skinMatrices + i * 16u, world, bones[i].inverse);
     }
     output.resize(vertices.size() * 3u);
     for (std::size_t i = 0; i < vertices.size(); ++i) {
@@ -148,7 +162,7 @@ struct HumanModelData {
         if (w <= 0)
           continue;
         float transformed[3];
-        point(skinMatrices.data() +
+        point(skinMatrices +
                   static_cast<std::size_t>(vertices[i].bones[k]) * 16u,
               bound, transformed);
         for (int axis = 0; axis < 3; ++axis)

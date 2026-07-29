@@ -27,6 +27,7 @@ private:
     unsigned int flowerShadowList_ = 0;
     HumanModelData humanModel_;
     mutable std::vector<float> humanVertices_;
+    mutable HumanModelSkinScratch humanSkinScratch_;
     mutable unsigned int datamoshTexture_ = 0;
     mutable unsigned int tvScreenTexture_ = 0;
     mutable unsigned int phoneDisplayTexture_ = 0;
