@@ -46,13 +46,22 @@ Use **Tasks: Run Task**:
 - `Windows: native tests`
 - `Android: assemble debug`
 - `macOS: verify locally`
+- `Browser: serve reference over HTTP`
+- `Browser: HTTP asset smoke`
 - `SSH: check Mac connection`
-- `SSH: verify current commit on Mac`
+- `SSH: verify detached commit on Mac`
 
-The remote Mac verification task prompts for the Mac repository path and branch.
-It performs a fast-forward-only pull, runs the asset gate, and then runs the
-tracked macOS verifier. It never edits or invokes the untracked
-`scripts/build-macos-release.sh`.
+The remote Mac verification task prompts for the SSH alias, repository path,
+remote, and branch. It refuses a dirty source checkout, fetches the requested
+branch, creates a temporary detached Git worktree, runs the asset gate and
+tracked macOS verifier, and removes only that temporary worktree. It does not
+checkout, reset, or pull the developer's active branch. It never edits or
+invokes the untracked `scripts/build-macos-release.sh`.
+
+The browser server uses only the Node.js standard library, binds to localhost,
+disables caching, blocks paths outside `reference/browser-pass7`, and serves no
+other repository files. The HTTP smoke task verifies every generated audio
+response plus the HTML, module, and embedded verified assets.
 
 Do not share `.env` files, signing keys, Gradle local properties, build
 directories, or store credentials through the workspace.

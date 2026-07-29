@@ -87,16 +87,42 @@
       "problemMatcher": []
     },
     {
-      "label": "SSH: verify current commit on Mac",
+      "label": "Browser: serve reference over HTTP",
       "type": "process",
-      "command": "ssh",
+      "command": "node",
+      "args": ["tools/serve-browser-preview.mjs"],
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "data-browser-preview",
+        "pattern": [{"regexp": "^(.*)$", "message": 1}],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^DATA_BROWSER_PREVIEW_STARTING ",
+          "endsPattern": "^DATA_BROWSER_PREVIEW_READY "
+        }
+      }
+    },
+    {
+      "label": "Browser: HTTP asset smoke",
+      "type": "process",
+      "command": "node",
+      "args": ["tools/smoke-browser-preview.mjs"],
+      "dependsOn": "Browser: serve reference over HTTP",
+      "problemMatcher": []
+    },
+    {
+      "label": "SSH: verify detached commit on Mac",
+      "type": "process",
+      "command": "powershell.exe",
       "args": [
-        "${input:macSshHost}",
-        "cd ${input:macRepoPath} && git fetch --all --prune && git checkout ${input:branchName} && git pull --ff-only && npm run assets:check && bash scripts/verify-macos-baseline.sh"
+        "-NoProfile", "-ExecutionPolicy", "Bypass",
+        "-File", "scripts/verify-macos-over-ssh.ps1",
+        "-HostAlias", "${input:macSshHost}",
+        "-RepositoryPath", "${input:macRepoPath}",
+        "-Branch", "${input:branchName}",
+        "-Remote", "${input:macGitRemote}"
       ],
-      "windows": {
-        "command": "ssh"
-      },
+      "windows": {"command": "powershell.exe"},
       "problemMatcher": []
     }
   ],
@@ -118,6 +144,12 @@
       "type": "promptString",
       "description": "Branch to verify on the Mac",
       "default": "release/pr3-internal-rc-pipeline"
+    },
+    {
+      "id": "macGitRemote",
+      "type": "promptString",
+      "description": "Git remote containing the branch on the Mac",
+      "default": "github"
     }
   ]
 }
