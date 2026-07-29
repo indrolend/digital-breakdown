@@ -1,0 +1,123 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Data: asset release gate",
+      "type": "process",
+      "command": "node",
+      "args": ["tools/validate-asset-inventory.mjs"],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Windows: environment status",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "tools/dbdev.ps1", "status"],
+      "windows": {
+        "command": "powershell.exe"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Windows: desktop Release build",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "tools/desktop/run-desktop.ps1",
+        "-Configuration",
+        "Release",
+        "-BuildOnly"
+      ],
+      "windows": {
+        "command": "powershell.exe"
+      },
+      "dependsOn": "Data: asset release gate",
+      "problemMatcher": ["$msCompile"]
+    },
+    {
+      "label": "Windows: native tests",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/verify-gameplay.ps1"],
+      "windows": {
+        "command": "powershell.exe"
+      },
+      "dependsOn": "Data: asset release gate",
+      "group": "test",
+      "problemMatcher": ["$msCompile"]
+    },
+    {
+      "label": "Android: assemble debug",
+      "type": "shell",
+      "command": "./android/gradlew",
+      "args": ["-p", "./native-android", "assembleDebug"],
+      "windows": {
+        "command": ".\\android\\gradlew.bat",
+        "args": ["-p", ".\\native-android", "assembleDebug"]
+      },
+      "dependsOn": "Data: asset release gate",
+      "group": "build",
+      "problemMatcher": ["$gradle"]
+    },
+    {
+      "label": "macOS: verify locally",
+      "type": "process",
+      "command": "bash",
+      "args": ["scripts/verify-macos-baseline.sh"],
+      "osx": {
+        "command": "bash"
+      },
+      "dependsOn": "Data: asset release gate",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "SSH: check Mac connection",
+      "type": "process",
+      "command": "ssh",
+      "args": ["-o", "BatchMode=yes", "${input:macSshHost}", "uname -a"],
+      "windows": {
+        "command": "ssh"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "SSH: verify current commit on Mac",
+      "type": "process",
+      "command": "ssh",
+      "args": [
+        "${input:macSshHost}",
+        "cd ${input:macRepoPath} && git fetch --all --prune && git checkout ${input:branchName} && git pull --ff-only && npm run assets:check && bash scripts/verify-macos-baseline.sh"
+      ],
+      "windows": {
+        "command": "ssh"
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "macSshHost",
+      "type": "promptString",
+      "description": "Private SSH config alias for the Mac",
+      "default": "digital-breakdown-mac"
+    },
+    {
+      "id": "macRepoPath",
+      "type": "promptString",
+      "description": "Repository path on the Mac",
+      "default": "~/Projects/digital-breakdown"
+    },
+    {
+      "id": "branchName",
+      "type": "promptString",
+      "description": "Branch to verify on the Mac",
+      "default": "release/pr3-internal-rc-pipeline"
+    }
+  ]
+}

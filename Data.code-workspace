@@ -1,0 +1,32 @@
+{
+  "folders": [
+    {
+      "name": "Data",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "cmake.sourceDirectory": "${workspaceFolder}/native-desktop",
+    "cmake.buildDirectory": "${workspaceFolder}/build/vscode-${buildType}",
+    "cmake.configureOnOpen": false,
+    "files.exclude": {
+      "**/build": true,
+      "**/.gradle": true,
+      "**/node_modules": true
+    },
+    "search.exclude": {
+      "build/**": true,
+      "native-android/app/build/**": true,
+      "multiplayer-server/node_modules/**": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.cpptools",
+      "ms-vscode.cmake-tools",
+      "ms-vscode-remote.remote-ssh",
+      "vscjava.vscode-java-pack",
+      "redhat.vscode-yaml"
+    ]
+  }
+}
