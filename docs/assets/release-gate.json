@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "blockedShippingStatuses": ["UNKNOWN", "REPLACE", "REMOVE"],
+  "allowedStatuses": ["VERIFIED", "REPLACE", "TEMPORARY", "REMOVE", "UNKNOWN"],
+  "allowedRiskLevels": ["Critical", "High", "Medium", "Low"],
+  "temporaryShippingRequirements": {
+    "verified": "Yes",
+    "commercialRedistributionAllowed": "Yes",
+    "purpose": "Creative placeholder only; never legal uncertainty"
+  }
+}

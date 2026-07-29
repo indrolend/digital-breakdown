@@ -82,9 +82,11 @@ def write(filename,model):
     (OUT/filename).write_bytes(data);return {'vertices':len(vertices)//3,'batches':len(batches),'bytes':len(data)}
 
 OUT.mkdir(exist_ok=True)
-report={'phone':write('phone.dbmesh',bake('IPHONE_GLB_BASE64',height=.16)),'flower':write('flower.dbmesh',bake('PENTAGONAL_FLOWER_GLB_BASE64',max_dimension=.72))}
+report={'flower':write('flower.dbmesh',bake('PENTAGONAL_FLOWER_GLB_BASE64',max_dimension=.72))}
 manifest_path=OUT/'manifest.json'
 manifest=json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+if 'phone' not in manifest:
+    raise RuntimeError('Missing project-owned phone model. Run node tools/generate-release-safe-placeholders.mjs first.')
 manifest.update({'format':'DBM1 texture-baked/DBH1','source':'reference/browser-pass7/assets/embedded-assets.js',**report})
 manifest_path.write_text(json.dumps(manifest,indent=2)+'\n')
 print(json.dumps(report,indent=2))

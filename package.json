@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "menu": "node ./tools/dev-menu.mjs",
+    "assets:generate-placeholders": "node ./tools/generate-release-safe-placeholders.mjs",
+    "assets:check": "node ./tools/validate-asset-inventory.mjs",
     "build:web": "esbuild ./www/android-entry.mjs --bundle --platform=browser --format=iife --target=chrome61 --outfile=./www/android-bundle.js --log-level=info",
     "cap:sync": "cap sync android",
     "android:build:mac": "./scripts/build-android.sh",

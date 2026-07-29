@@ -5,7 +5,7 @@ through `reference/browser-pass7/index_module.mjs`.
 
 ## Phone model
 
-- Embedded iPhone GLB SHA-256:
+- Historical embedded phone GLB (removed in release-safe remediation) SHA-256:
   `fef80e9154a509d0f7a3aafd530661faea9f3ac4b65e8c8f9c0f9b4ab5f9c619`.
 - The GLB is 9,591,068 bytes and contains 34 nodes, 31 meshes, 16 materials,
   26 textures, and 26 embedded images.

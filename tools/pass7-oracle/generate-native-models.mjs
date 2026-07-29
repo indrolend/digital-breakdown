@@ -94,10 +94,13 @@ function writeHumanModel(filename) {
   fs.writeFileSync(path.join(outDir,filename),bytes);
   return {vertices:vertexCount,bones:boneCount,frames:frameCount,bytes:bytes.length,minY,unitScale,color};
 }
-const phone=flatten("IPHONE_GLB_BASE64",0.16),flower=flatten("PENTAGONAL_FLOWER_GLB_BASE64",null,0.72);
+const flower=flatten("PENTAGONAL_FLOWER_GLB_BASE64",null,0.72);
 fs.mkdirSync(outDir,{recursive:true});
-const phoneBytes=writeModel("phone.dbmesh",phone),flowerBytes=writeModel("flower.dbmesh",flower);
+const flowerBytes=writeModel("flower.dbmesh",flower);
 const human=writeHumanModel("human.dbhuman");
-const manifest={format:"DBM1/DBH1",source:"reference/browser-pass7/assets/embedded-assets.js",phone:{vertices:phone.vertices.length/3,batches:phone.batches.length,bytes:phoneBytes},flower:{vertices:flower.vertices.length/3,batches:flower.batches.length,bytes:flowerBytes},human};
+const priorManifestPath=path.join(outDir,"manifest.json");
+const priorManifest=fs.existsSync(priorManifestPath)?JSON.parse(fs.readFileSync(priorManifestPath,"utf8")):{};
+if(!priorManifest.phone)throw new Error("Missing project-owned phone model. Run node tools/generate-release-safe-placeholders.mjs first.");
+const manifest={format:"DBM1/DBH1",source:"reference/browser-pass7/assets/embedded-assets.js",phone:priorManifest.phone,flower:{vertices:flower.vertices.length/3,batches:flower.batches.length,bytes:flowerBytes},human};
 fs.writeFileSync(path.join(outDir,"manifest.json"),JSON.stringify(manifest,null,2)+"\n");
 console.log(JSON.stringify({output:outDir,...manifest},null,2));

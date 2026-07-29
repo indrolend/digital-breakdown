@@ -15,8 +15,7 @@ the AGPL.
 
 Third-party dependencies and assets remain under their respective licenses.
 The public source repository intentionally excludes media whose redistribution
-rights have not been confirmed. See [Runtime assets](ASSETS_REQUIRED.md) and
-[Asset Credits](docs/ASSET_CREDITS.md).
+rights have not been confirmed. See [Asset Credits](docs/ASSET_CREDITS.md).
 
 ## Desktop development
 

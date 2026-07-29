@@ -101,7 +101,11 @@ struct DesktopGamepadInput {
 float gamepadAxis(float value,float deadzone=0.18f){const float magnitude=std::abs(value);if(magnitude<=deadzone)return 0.0f;return std::copysign((magnitude-deadzone)/(1.0f-deadzone),value);}
 float gamepadLookAxis(float value){const float axis=gamepadAxis(value,0.16f);return std::copysign(std::pow(std::abs(axis),1.35f),axis);}
 bool triggerHeld(float value,float threshold=0.20f){return value>threshold;}
-void rumblePulse(const LocalSettingsState& settings,float low,float high,int milliseconds){if(settings.controllerVibration<=0)return;const float scale=settings.controllerVibration==1?0.45f:1.0f;controllerRumblePulse(low*scale,high*scale,milliseconds);}
+void rumblePulse(const LocalSettingsState& settings,float low,float high,int milliseconds){
+    if(settings.controllerVibration<=0)return;
+    const float scale=settings.controllerVibration==1?1.0f:1.30f;
+    controllerRumblePulse(clampf(low*scale,0.0f,1.0f),clampf(high*scale,0.0f,1.0f),milliseconds);
+}
 void resetGamepadHistory(HostState& host){host.previousGamepadButtons.fill(GLFW_RELEASE);host.previousGamepadLeftTrigger=false;host.previousGamepadRightTrigger=false;host.previousGamepadMenuLeft=host.previousGamepadMenuRight=host.previousGamepadMenuUp=host.previousGamepadMenuDown=false;controllerRumbleStop();}
 bool preferRawXboxLayout(int jid){const char* guid=glfwGetJoystickGUID(jid);return guid&&std::strcmp(guid,"030000005e040000130b000013050000")==0;}
 
@@ -117,23 +121,23 @@ void updateOutcomeRumble(HostState& host){
         const AudioEventState& event=state.audio.events[(serial-1u)%AUDIO_EVENT_COUNT];
         if(event.serial!=serial)continue;
         switch(event.cue){
-            case AudioCue::PaymentSuccess: offer(6,0.78f,0.88f,135);break;
+            case AudioCue::PaymentSuccess: offer(6,0.38f,0.45f,85);break;
             case AudioCue::Capture1:case AudioCue::Capture2:case AudioCue::Capture3:case AudioCue::Capture4:case AudioCue::Capture5:
-                offer(4,0.42f,0.74f,78);break;
-            case AudioCue::HeadshotCritical:offer(5,0.64f,0.95f,88);break;
-            case AudioCue::Headshot:offer(3,0.28f,0.82f,52);break;
-            case AudioCue::NegativeAck:offer(5,0.82f,0.16f,105);break;
+                offer(4,0.20f,0.32f,55);break;
+            case AudioCue::HeadshotCritical:offer(5,0.28f,0.52f,65);break;
+            case AudioCue::Headshot:offer(3,0.12f,0.36f,40);break;
+            case AudioCue::NegativeAck:offer(5,0.38f,0.08f,75);break;
             default:break;
         }
     }
     host.lastHapticAudioSerial=newest;
     if(state.meleeVisual.hitMask!=host.previousMeleeHitMask&&(state.meleeVisual.hitMask&~host.previousMeleeHitMask)!=0)
-        offer(3,0.72f,0.34f,60);
+        offer(3,0.32f,0.12f,45);
     host.previousMeleeHitMask=state.meleeVisual.hitMask;
     for(int track=0;track<3;++track)if(state.progression.permanent.levels[track]>host.previousPermanentLevels[track])
-        offer(5,0.46f,0.82f,92);
+        offer(5,0.22f,0.36f,65);
     host.previousPermanentLevels=state.progression.permanent.levels;
-    if(host.previousPlayerAlive&&!state.player.alive)offer(7,0.92f,0.24f,175);
+    if(host.previousPlayerAlive&&!state.player.alive)offer(7,0.55f,0.10f,140);
     host.previousPlayerAlive=state.player.alive;
     if(priority>0)rumblePulse(state.localSettings,low,high,duration);
 }
@@ -554,20 +558,20 @@ DesktopGamepadInput pollGamepad(GLFWwindow* window,HostState& host){
                 ?dbmenu::moveUpgradeGridSelection(current,0,menuDown?1:-1)
                 :current+(menuDown?1:-1);
             setMenuSelection(host,next);
-            rumblePulse(host.game.state().localSettings,0.06f,0.32f,22);
+            rumblePulse(host.game.state().localSettings,0.03f,0.14f,18);
         }else if((menuLeft&&!host.previousGamepadMenuLeft)||(menuRight&&!host.previousGamepadMenuRight)){
             const int direction=menuRight?1:-1;
             if(host.game.state().upgradeMenu.active)
                 setMenuSelection(host,dbmenu::moveUpgradeGridSelection(host.game.state().hud.menuSelection,direction,0));
             else if(!adjustMenuSetting(host,direction)&&menuRight)
                 toggleMenuSetting(host);
-            rumblePulse(host.game.state().localSettings,0.12f,0.42f,30);
+            rumblePulse(host.game.state().localSettings,0.05f,0.20f,22);
         }
-        if(pressed(GLFW_GAMEPAD_BUTTON_A)){rumblePulse(host.game.state().localSettings,0.42f,0.62f,48);activateMenuSelection(window,host);}
-        if(pressed(GLFW_GAMEPAD_BUTTON_B)){rumblePulse(host.game.state().localSettings,0.28f,0.10f,32);controllerMenuBack(window,host);}
-        if(pressed(GLFW_GAMEPAD_BUTTON_START)&&host.game.state().uiPaused){rumblePulse(host.game.state().localSettings,0.28f,0.10f,32);controllerMenuBack(window,host);}
+        if(pressed(GLFW_GAMEPAD_BUTTON_A)){rumblePulse(host.game.state().localSettings,0.10f,0.24f,32);activateMenuSelection(window,host);}
+        if(pressed(GLFW_GAMEPAD_BUTTON_B)){rumblePulse(host.game.state().localSettings,0.12f,0.05f,28);controllerMenuBack(window,host);}
+        if(pressed(GLFW_GAMEPAD_BUTTON_START)&&host.game.state().uiPaused){rumblePulse(host.game.state().localSettings,0.12f,0.05f,28);controllerMenuBack(window,host);}
     }else if(host.enteringJoinCode){
-        if(pressed(GLFW_GAMEPAD_BUTTON_B)){rumblePulse(host.game.state().localSettings,0.28f,0.10f,32);controllerMenuBack(window,host);}
+        if(pressed(GLFW_GAMEPAD_BUTTON_B)){rumblePulse(host.game.state().localSettings,0.12f,0.05f,28);controllerMenuBack(window,host);}
     }else{
         input.moveX=leftX;input.moveZ=-leftY;input.lookX=rightX*13.5f;input.lookY=rightY*10.5f;
         input.vacuumHeld=rightTriggerDown||currentButtons[GLFW_GAMEPAD_BUTTON_B]==GLFW_PRESS;
@@ -582,10 +586,9 @@ DesktopGamepadInput pollGamepad(GLFWwindow* window,HostState& host){
         else if(pressed(GLFW_GAMEPAD_BUTTON_DPAD_LEFT))host.game.setCommSignal(4);
         if(pressed(GLFW_GAMEPAD_BUTTON_START))setMouseCaptured(window,host,!host.mouseCaptured);
         if(host.game.state().player.grabbedByTarget>=0&&std::abs(leftX)>0.35f)host.game.setWiggle(leftX*12.0f);
-        if(input.meleePressed)rumblePulse(host.game.state().localSettings,0.78f,0.28f,82);
-        else if(input.shootPressed)rumblePulse(host.game.state().localSettings,0.18f,0.78f,52);
-        else if(rightTriggerPressed)rumblePulse(host.game.state().localSettings,0.10f,0.46f,28);
-        else if(input.jumpPressed)rumblePulse(host.game.state().localSettings,0.34f,0.16f,36);
+        if(input.shootPressed)rumblePulse(host.game.state().localSettings,0.08f,0.32f,36);
+        else if(rightTriggerPressed)rumblePulse(host.game.state().localSettings,0.04f,0.16f,20);
+        else if(input.jumpPressed)rumblePulse(host.game.state().localSettings,0.16f,0.04f,28);
     }
     host.previousGamepadMenuLeft=menuLeft;host.previousGamepadMenuRight=menuRight;host.previousGamepadMenuUp=menuUp;host.previousGamepadMenuDown=menuDown;
     host.previousGamepadLeftTrigger=leftTriggerDown;
@@ -687,7 +690,7 @@ void keyCallback(GLFWwindow* window, int key, int, int action, int) {
 void cursorCallback(GLFWwindow* window, double x, double y) {
     HostState* host = stateFor(window);
     if (!host) return;
-    if(!host->mouseCaptured){const int hovered=menuItemAt(window,*host,x,y);if(hovered>=0)setMenuSelection(*host,hovered);return;}
+    if(!host->mouseCaptured){const int hovered=menuItemAt(window,*host,x,y);if(hovered>=0){const int before=host->game.state().hud.menuSelection;setMenuSelection(*host,hovered);if(before!=host->game.state().hud.menuSelection)touchpadHapticPulse(TouchpadHapticNavigate,host->game.state().localSettings.controllerVibration);}return;}
 
     if (!host->haveMouse) {
         host->lastMouseX = x;
@@ -716,6 +719,7 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int) {
         double x=0,y=0;glfwGetCursorPos(window,&x,&y);const int hovered=menuItemAt(window,*host,x,y);
         if(hovered>=0)setMenuSelection(*host,hovered);
         if((button==GLFW_MOUSE_BUTTON_LEFT||button==GLFW_MOUSE_BUTTON_RIGHT)&&hovered>=0){
+            touchpadHapticPulse(TouchpadHapticConfirm,host->game.state().localSettings.controllerVibration);
             activateMenuSelection(window,*host);
             if(button==GLFW_MOUSE_BUTTON_LEFT&&host->mouseCaptured)host->suppressLeftMouseUntilRelease=true;
         }
@@ -785,6 +789,7 @@ void printUsage() {
     std::printf("  --build-identity-json    Print machine-readable build identity and exit.\n");
     std::printf("  --capture-frame PATH Capture a hidden frame and exit.\n");
     std::printf("  --capture-menu-frame PATH --menu-page NAME  Capture a phone menu page and exit.\n");
+    std::printf("  --capture-cpu-demo DIR  Record a HUD-free deterministic gameplay vignette as PPM frames.\n");
     std::printf("  --net-latency-ms N --net-jitter-ms N  Enable explicit deterministic network impairment.\n");
     std::printf("  --net-drop-snapshot-every N --net-drop-input-every N --net-seed N\n");
 }
@@ -995,6 +1000,8 @@ int main(int argc, char** argv) {
     const bool captureMosh=argValue(argc,argv,"--capture-mosh-frame")!=nullptr;
     const bool capturePhone=argValue(argc,argv,"--capture-phone-frame")!=nullptr;
     const bool captureMenu=argValue(argc,argv,"--capture-menu-frame")!=nullptr;
+    const char* captureDemoDir=argValue(argc,argv,"--capture-cpu-demo");
+    const bool captureDemo=captureDemoDir!=nullptr;
     const char* captureMenuPage=argValue(argc,argv,"--menu-page");
     const bool captureMenuPause=captureMenu&&captureMenuPage&&std::strcmp(captureMenuPage,"pause")==0;
     const bool tvRoomTest=hasArg(argc,argv,"--tv-room-test");
@@ -1073,7 +1080,7 @@ int main(int argc, char** argv) {
     std::printf("Persistent save: %s%s\n",host.progressionPath.string().c_str(),loadedPersistentSave?" (loaded)":"");
     if(const char* service=std::getenv("DIGITAL_BREAKDOWN_MULTIPLAYER_URL"))host.multiplayerService=service;
     host.game.reset();
-    if(!capturePath||captureStart)host.game.prepareStartScreen();
+    if((!capturePath&&!captureDemo)||captureStart)host.game.prepareStartScreen();
     if(captureMenu){
         const char* page=captureMenuPage;
         GameState& fixture=host.game.networkMutableState();
@@ -1107,6 +1114,24 @@ int main(int argc, char** argv) {
     if(captureSoul){GameState& fixture=const_cast<GameState&>(host.game.state());for(int i=1;i<TARGET_COUNT;++i)fixture.targets[i].alive=false;auto& target=fixture.targets[0];target.alive=true;target.slurpable=true;target.soulMorph=1;target.soulCubeAmount=1;target.pos=fixture.player.pos+Vec3{0,0.5f,-1.5f};target.walkTarget=target.pos;target.health=1;target.armor=0;target.soulState=SoulState::Free;fixture.camera.yaw=0;fixture.camera.pitch=0;}
     if(capturePaused)host.game.setUiPaused(true);
     if(capturePhone){GameState& fixture=const_cast<GameState&>(host.game.state());for(auto& target:fixture.targets)target.alive=false;}
+    if(captureDemo){
+        std::filesystem::create_directories(captureDemoDir);
+        host.game.restart();
+        GameState& fixture=host.game.networkMutableState();
+        fixture.camera.firstPerson=false;
+        for(auto& target:fixture.targets)target.alive=false;
+        auto& target=fixture.targets[0];
+        target=TargetState{};
+        target.alive=true;
+        target.pos=fixture.player.pos+Vec3{0.45f,0.0f,-2.85f};
+        target.walkTarget=target.pos;
+        target.visualYaw=0.0f;
+        target.scale=1.08f;
+        target.attackCooldown=999.0f;
+        target.armor=2.0f;
+        fixture.localSettings.particles=true;
+        fixture.localSettings.fpsCounter=false;
+    }
     host.audio.setAssetRoot(std::filesystem::absolute(argv[0]).parent_path()/"audio");
 
     glfwSetWindowUserPointer(window, &host);
@@ -1128,6 +1153,7 @@ int main(int argc, char** argv) {
     int framebufferHeight = 1;
     glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
     host.renderer.resize(framebufferWidth, framebufferHeight);
+    if(captureDemo)host.renderer.setHudVisible(false);
     if(!tvRoomTest&&!tvRoomEnter){
         host.multiplayer.configureImpairment(
             argInt(argc,argv,"--net-latency-ms"),
@@ -1333,7 +1359,7 @@ int main(int argc, char** argv) {
         const auto now = std::chrono::steady_clock::now();
         const double elapsed = std::chrono::duration<double>(now - previous).count();
         previous = now;
-        if (!capturePath) simulationAccumulator += std::min(elapsed, MAX_FRAME_DELTA_SECONDS);
+        if (!capturePath&&!captureDemo) simulationAccumulator += std::min(elapsed, MAX_FRAME_DELTA_SECONDS);
 
         const DesktopGamepadInput gamepad=pollGamepad(window,host);
         const bool leftMouseDown=glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
@@ -1354,6 +1380,26 @@ int main(int argc, char** argv) {
             gamepad.shootPressed,
             gamepad.cameraPressed
         );
+        if(captureDemo){
+            const int f=captureFrames;
+            const bool approach=f<82;
+            const bool circle=f>=82&&f<236;
+            const bool retreat=f>=236&&f<286;
+            const bool melee=f==96||f==158||f==220;
+            const bool jump=f==246;
+            host.game.setTouchControls(
+                circle?0.52f:(retreat?-0.28f:0.0f),
+                approach?0.66f:(circle?0.14f:(retreat?-0.42f:0.0f)),
+                circle?0.26f:(retreat?-0.10f:0.0f),
+                0.0f,
+                false,
+                false,
+                jump,
+                melee,
+                false,
+                false
+            );
+        }
         host.lookX = 0.0;
         host.lookY = 0.0;
 
@@ -1374,7 +1420,7 @@ int main(int argc, char** argv) {
         }
 
         if(captureMosh&&captureFrames==10){GameState& fixture=const_cast<GameState&>(host.game.state());fixture.doorTransition.active=true;fixture.doorTransition.progress=1.0f;fixture.doorTransition.distanceTravelled=0;fixture.doorTransition.lastPlayerPos=fixture.player.pos;}
-        if (capturePath) {
+        if (capturePath||captureDemo) {
             previousCamera = host.game.state().camera;
             previousPhoneTransform = host.game.state().phoneTransform;
             host.game.update(static_cast<float>(SIMULATION_STEP_SECONDS));
@@ -1452,6 +1498,23 @@ int main(int argc, char** argv) {
             }
         }
         host.renderer.draw(renderState);
+        if(captureDemo){
+            glfwSwapBuffers(window);
+            if((captureFrames%2)==0){
+                glReadBuffer(GL_FRONT);
+                char frameName[32];
+                std::snprintf(frameName,sizeof(frameName),"frame-%04d.ppm",captureFrames/2);
+                const auto framePath=std::filesystem::path(captureDemoDir)/frameName;
+                const bool captured=captureFramebuffer(framePath,framebufferWidth,framebufferHeight);
+                glReadBuffer(GL_BACK);
+                if(!captured)std::printf("CAPTURE_CPU_DEMO_FAILED %s\n",framePath.string().c_str());
+            }
+            if(++captureFrames>=300){
+                std::printf("CAPTURE_CPU_DEMO_OK %s\n",captureDemoDir);
+                glfwSetWindowShouldClose(window,GLFW_TRUE);
+            }
+            continue;
+        }
         if(capturePath&&++captureFrames>=30){const bool captured=captureFramebuffer(capturePath,framebufferWidth,framebufferHeight);std::printf("CAPTURE_FRAME_%s %s\n",captured?"OK":"FAILED",capturePath);glfwSetWindowShouldClose(window,GLFW_TRUE);}
         glfwSwapBuffers(window);
     }

@@ -3,7 +3,9 @@ node_modules/
 /build/
 /DigitalBreakdownDev.exe
 
-/reference/browser-pass7/
+/reference/browser-pass7/*
+!/reference/browser-pass7/audio/
+!/reference/browser-pass7/audio/*.wav
 
 android/.gradle/
 android/build/
@@ -31,6 +33,9 @@ multiplayer-server/.wrangler/
 !native-desktop/audio/*.mp3
 !native-android/app/src/main/res/raw/*.mp3
 *.wav
+!native-desktop/audio/*.wav
+!native-android/app/src/main/res/raw/*.wav
+!reference/browser-pass7/audio/*.wav
 *.flac
 *.aiff
 *.ogg
@@ -68,11 +73,3 @@ android/app/src/main/assets/
 android/app/src/main/res/xml/config.xml
 android/capacitor-cordova-android-plugins/
 backup-*/
-
-# Public source snapshot: media without confirmed redistribution rights.
-/reference/
-/artifacts/
-/native-desktop/audio/
-/native-models/
-/native-tv-gifs/
-/native-android/app/src/main/res/raw/

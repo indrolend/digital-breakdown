@@ -1,0 +1,48 @@
+name: Native macOS Validation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    name: Build universal macOS app for validation
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify against known-good Mac baseline
+        env:
+          DB_MAC_BASELINE: b4e3ecb
+          DB_MAC_ARCHITECTURES: x86_64;arm64
+        run: bash scripts/verify-macos-baseline.sh
+
+      - name: Package application bundle
+        run: |
+          set -euo pipefail
+          APP="build/macos-release/bin/DigitalBreakdown.app"
+          test -d "$APP"
+          test -x "$APP/Contents/MacOS/DigitalBreakdown"
+          file "$APP/Contents/MacOS/DigitalBreakdown" | tee macos-binary.txt
+          grep -q 'x86_64' macos-binary.txt
+          grep -q 'arm64' macos-binary.txt
+          mkdir -p dist
+          ditto -c -k --sequesterRsrc --keepParent "$APP" dist/DigitalBreakdown-macOS-Universal.zip
+          shasum -a 256 dist/DigitalBreakdown-macOS-Universal.zip > dist/DigitalBreakdown-macOS-Universal.zip.sha256
+
+      - name: Upload macOS package
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-macos-universal
+          path: |
+            dist/DigitalBreakdown-macOS-Universal.zip
+            dist/DigitalBreakdown-macOS-Universal.zip.sha256
+            macos-binary.txt
+          if-no-files-found: error
+          retention-days: 30
